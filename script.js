@@ -72,10 +72,10 @@ function candyCrushGame() {
     function dragDrop() {
         colorBeingReplaced = this.style.backgroundImage;
         squareIdBeingReplaced = parseInt(this.id);
-        this.style.backgroundImage = colorBeingDragged;
-        squares[
-            squareIdBeingDragged
-        ].style.backgroundImage = colorBeingReplaced;
+        // this.style.backgroundImage = colorBeingDragged;
+        // squares[
+        //     squareIdBeingDragged
+        // ].style.backgroundImage = colorBeingReplaced;
     }
 
     function dragEnd() {
@@ -154,6 +154,8 @@ function candyCrushGame() {
 
     //For Row of Four
     function checkRowForFour() {
+        let matchFound = false;
+
         for (i = 0; i < 60; i++) {
             let rowOfFour = [i, i + 1, i + 2, i + 3];
             let decidedColor = squares[i].style.backgroundImage;
@@ -196,13 +198,17 @@ function candyCrushGame() {
                 rowOfFour.forEach((index) => {
                     squares[index].style.backgroundImage = "";
                 });
+                matchFound = true;
             }
         }
+        return matchFound;
     }
     checkRowForFour();
 
     //For Column of Four
     function checkColumnForFour() {
+        let matchFound = false;
+
         for (i = 0; i < 39; i++) {
             let columnOfFour = [i, i + width, i + width * 2, i + width * 3];
             let decidedColor = squares[i].style.backgroundImage;
@@ -220,8 +226,11 @@ function candyCrushGame() {
                 columnOfFour.forEach((index) => {
                     squares[index].style.backgroundImage = "";
                 });
+                matchFound = true;
+
             }
         }
+        return matchFound;
     }
     checkColumnForFour();
 
@@ -274,6 +283,8 @@ function candyCrushGame() {
 
     //For Column of Three
     function checkColumnForThree() {
+        let matchFound = false;
+
         for (i = 0; i < 47; i++) {
             let columnOfThree = [i, i + width, i + width * 2];
             let decidedColor = squares[i].style.backgroundImage;
@@ -291,8 +302,10 @@ function candyCrushGame() {
                 columnOfThree.forEach((index) => {
                     squares[index].style.backgroundImage = "";
                 });
+                matchFound = true;
             }
         }
+        return matchFound;
     }
     checkColumnForThree();
 
