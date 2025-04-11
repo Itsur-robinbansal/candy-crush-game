@@ -10,13 +10,34 @@ function candyCrushGame() {
     let score = 0;
 
     const candyColors = [
-        "url(https://raw.githubusercontent.com/arpit456jain/Amazing-Js-Projects/master/Candy%20Crush/utils/red-candy.png)",
-        "url(https://raw.githubusercontent.com/arpit456jain/Amazing-Js-Projects/master/Candy%20Crush/utils/blue-candy.png)",
-        "url(https://raw.githubusercontent.com/arpit456jain/Amazing-Js-Projects/master/Candy%20Crush/utils/green-candy.png)",
-        "url(https://raw.githubusercontent.com/arpit456jain/Amazing-Js-Projects/master/Candy%20Crush/utils/yellow-candy.png)",
-        "url(https://raw.githubusercontent.com/arpit456jain/Amazing-Js-Projects/master/Candy%20Crush/utils/orange-candy.png)",
-        "url(https://raw.githubusercontent.com/arpit456jain/Amazing-Js-Projects/master/Candy%20Crush/utils/purple-candy.png)",
+        "url(images/red-candy.png)",
+        "url(images/blue-candy.png)",
+        "url(images/green-candy.png)",
+        "url(images/yellow-candy.png)",
+        "url(images/orange-candy.png)",
+        "url(images/purple-candy.png)",
     ];
+
+    // \\ add striped versions (horizontal and vertical)
+
+
+    const stripedCandyHorizontal = {
+        "url(images/red-candy.png)": "url(images/redh.png)",
+        "url(images/blue-candy.png)": "url(images/blueh.png)",
+        "url(images/green-candy.png)": "url(images/greenh.png)",
+        "url(images/yellow-candy.png)": "url(images/yellowh.png)",
+        "url(images/orange-candy.png)": "url(images/orangeh.png)",
+        "url(images/purple-candy.png)": "url(images/purpleh.png)",
+    };
+
+    const stripedCandyVertical = {
+        "url(images/red-candy.png)": "url(images/redv.png)",
+        "url(images/blue-candy.png)": "url(images/bluev.png)",
+        "url(images/green-candy.png)": "url(images/greenv.png)",
+        "url(images/yellow-candy.png)": "url(images/yellowv.png)",
+        "url(images/orange-candy.png)": "url(images/orangev.png)",
+        "url(images/purple-candy.png)": "url(images/purplev.png)",
+    };
 
     // Creating Game Board
     function createBoard() {
@@ -72,11 +93,15 @@ function candyCrushGame() {
     function dragDrop() {
         colorBeingReplaced = this.style.backgroundImage;
         squareIdBeingReplaced = parseInt(this.id);
-        // this.style.backgroundImage = colorBeingDragged;
-        // squares[
-        //     squareIdBeingDragged
-        // ].style.backgroundImage = colorBeingReplaced;
+        this.style.backgroundImage = colorBeingDragged;
+        squares[
+            squareIdBeingDragged
+        ].style.backgroundImage = colorBeingReplaced;
     }
+
+    // Add a flag to track if a drag operation is in progress
+    let isDragging = false;
+
 
     function dragEnd() {
         //Defining, What is a valid move?
@@ -88,47 +113,40 @@ function candyCrushGame() {
         ];
         let validMove = validMoves.includes(squareIdBeingReplaced);
 
-        // if (squareIdBeingReplaced && validMove) {
-
-        //     squareIdBeingReplaced = null;
-
-
-
-        // } else if (squareIdBeingReplaced && !validMove) {
-        //     squares[
-        //         squareIdBeingReplaced
-        //     ].style.backgroundImage = colorBeingReplaced;
-        //     squares[
-        //         squareIdBeingDragged
-        //     ].style.backgroundImage = colorBeingDragged;
-        // } else
-        //     squares[squareIdBeingDragged].style.backgroundImage = colorBeingDragged;.
-
         if (squareIdBeingReplaced && validMove) {
-            // Do the swap visually
-            let tempColor = squares[squareIdBeingReplaced].style.backgroundImage;
+
+            isDragging = true;
+
             squares[squareIdBeingReplaced].style.backgroundImage = colorBeingDragged;
-            squares[squareIdBeingDragged].style.backgroundImage = tempColor;
-    
-            // Now check for matches
-            const isMatch =
-                checkRowForFour() ||
+            squares[squareIdBeingDragged].style.backgroundImage = colorBeingReplaced;
+
+            // Check if the swap created a match
+            let matchFound = checkRowForFour() ||
                 checkColumnForFour() ||
                 checkRowForThree() ||
                 checkColumnForThree();
-    
-            if (isMatch) {
-                scoreDisplay.innerHTML = score;
-                squareIdBeingReplaced = null;
-            } else {
-                // Revert swap
-                squares[squareIdBeingReplaced].style.backgroundImage = tempColor;
+
+            isDragging = false;
+
+            // If no match was found, revert the swap
+            if (!matchFound) {
+                squares[squareIdBeingReplaced].style.backgroundImage = colorBeingReplaced;
                 squares[squareIdBeingDragged].style.backgroundImage = colorBeingDragged;
             }
-        } else {
-            // Revert swap if not even a valid position-wise move
-            squares[squareIdBeingDragged].style.backgroundImage = colorBeingDragged;
-        }
+            squareIdBeingReplaced = null;
+
+
+        } else if (squareIdBeingReplaced && !validMove) {
+            squares[
+                squareIdBeingReplaced
+            ].style.backgroundImage = colorBeingReplaced;
+            squares[
+                squareIdBeingDragged
+            ].style.backgroundImage = colorBeingDragged;
+        } else
+            squares[
+                squareIdBeingDragged
+            ].style.backgroundImage = colorBeingDragged;
     }
 
     //Dropping candies once some have been cleared
@@ -193,12 +211,33 @@ function candyCrushGame() {
                         !isBlank
                 )
             ) {
+                matchFound = true;
                 score += 4;
                 scoreDisplay.innerHTML = score;
-                rowOfFour.forEach((index) => {
-                    squares[index].style.backgroundImage = "";
-                });
-                matchFound = true;
+
+                // Create horizontal striped candy at the draggedId position if this is from a drag
+                if (isDragging && (rowOfFour.includes(squareIdBeingDragged) || rowOfFour.includes(squareIdBeingReplaced))) {
+                    // Determine which square to place the striped candy
+                    let stripedPosition = squareIdBeingDragged;
+                    if (rowOfFour.includes(squareIdBeingReplaced)) {
+                        stripedPosition = squareIdBeingReplaced;
+                    }
+
+                    // Make sure to clear all except the position for the striped candy
+                    rowOfFour.forEach((index) => {
+                        if (index !== stripedPosition) {
+                            squares[index].style.backgroundImage = "";
+                        }
+                    });
+
+                    // Place the horizontal striped candy
+                    squares[stripedPosition].style.backgroundImage = stripedCandyHorizontal[decidedColor];
+                } else {
+                    // Clear all candies in the match if not from dragging
+                    rowOfFour.forEach((index) => {
+                        squares[index].style.backgroundImage = "";
+                    });
+                }
             }
         }
         return matchFound;
@@ -208,7 +247,6 @@ function candyCrushGame() {
     //For Column of Four
     function checkColumnForFour() {
         let matchFound = false;
-
         for (i = 0; i < 39; i++) {
             let columnOfFour = [i, i + width, i + width * 2, i + width * 3];
             let decidedColor = squares[i].style.backgroundImage;
@@ -221,23 +259,41 @@ function candyCrushGame() {
                         !isBlank
                 )
             ) {
+                matchFound = true;
                 score += 4;
                 scoreDisplay.innerHTML = score;
-                columnOfFour.forEach((index) => {
-                    squares[index].style.backgroundImage = "";
-                });
-                matchFound = true;
 
+                // Create vertical striped candy at the draggedId position if this is from a drag
+                if (isDragging && (columnOfFour.includes(squareIdBeingDragged) || columnOfFour.includes(squareIdBeingReplaced))) {
+                    // Determine which square to place the striped candy
+                    let stripedPosition = squareIdBeingDragged;
+                    if (columnOfFour.includes(squareIdBeingReplaced)) {
+                        stripedPosition = squareIdBeingReplaced;
+                    }
+
+                    // Make sure to clear all except the position for the striped candy
+                    columnOfFour.forEach((index) => {
+                        if (index !== stripedPosition) {
+                            squares[index].style.backgroundImage = "";
+                        }
+                    });
+
+                    // Place the vertical striped candy
+                    squares[stripedPosition].style.backgroundImage = stripedCandyVertical[decidedColor];
+                } else {
+                    // Clear all candies in the match if not from dragging
+                    columnOfFour.forEach((index) => {
+                        squares[index].style.backgroundImage = "";
+                    });
+                }
             }
-        }
-        return matchFound;
+        } return matchFound;
     }
     checkColumnForFour();
 
     //For Row of Three
     function checkRowForThree() {
         let matchFound = false;
-
         for (i = 0; i < 61; i++) {
             let rowOfThree = [i, i + 1, i + 2];
             let decidedColor = squares[i].style.backgroundImage;
@@ -268,16 +324,14 @@ function candyCrushGame() {
                         !isBlank
                 )
             ) {
+                matchFound = true;
                 score += 3;
                 scoreDisplay.innerHTML = score;
                 rowOfThree.forEach((index) => {
                     squares[index].style.backgroundImage = "";
                 });
-                matchFound = true;
             }
-        }
-        return matchFound;
-
+        } return matchFound;
     }
     checkRowForThree();
 
@@ -297,24 +351,69 @@ function candyCrushGame() {
                         !isBlank
                 )
             ) {
-                score += 3;
+                score += 3; matchFound = true;
+
                 scoreDisplay.innerHTML = score;
                 columnOfThree.forEach((index) => {
                     squares[index].style.backgroundImage = "";
                 });
-                matchFound = true;
             }
         }
         return matchFound;
     }
     checkColumnForThree();
 
+    // Add function to handle striped candy effects
+    function crushCandy() {
+        for (let i = 0; i < width * width; i++) {
+            const currentCandy = squares[i].style.backgroundImage;
+
+            // Check if this is a horizontal striped candy
+            for (let regularCandy in stripedCandyHorizontal) {
+                if (currentCandy === stripedCandyHorizontal[regularCandy]) {
+                    // Get the row this candy is in
+                    const row = Math.floor(i / width);
+                    const rowStart = row * width;
+                    const rowEnd = rowStart + width;
+
+                    // Clear the entire row
+                    for (let j = rowStart; j < rowEnd; j++) {
+                        squares[j].style.backgroundImage = "";
+                    }
+
+                    // Increase score
+                    score += width;
+                    scoreDisplay.innerHTML = score;
+                    return true;
+                }
+            }
+
+            // Check if this is a vertical striped candy
+            for (let regularCandy in stripedCandyVertical) {
+                if (currentCandy === stripedCandyVertical[regularCandy]) {
+                    // Clear the entire column
+                    for (let j = i % width; j < width * width; j += width) {
+                        squares[j].style.backgroundImage = "";
+                    }
+
+                    // Increase score
+                    score += width;
+                    scoreDisplay.innerHTML = score;
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
 
     window.setInterval(function () {
+        crushCandy();
         checkRowForFour();
         checkColumnForFour();
         checkRowForThree();
         checkColumnForThree();
         moveIntoSquareBelow();
+
     }, 100);
 }
